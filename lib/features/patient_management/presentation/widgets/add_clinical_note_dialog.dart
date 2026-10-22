@@ -44,95 +44,110 @@ class _AddClinicalNoteDialogState extends State<AddClinicalNoteDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusLg),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 540),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.xs),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: AppSpacing.borderRadiusSm,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(AppSpacing.xs),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryContainer,
+                                  borderRadius: AppSpacing.borderRadiusSm,
+                                ),
+                                child: const Icon(Icons.note_add_outlined, color: AppColors.primary, size: 20),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Flexible(
+                                child: Text(
+                                  'Add Clinical Note',
+                                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.note_add_outlined, color: AppColors.primary, size: 20),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          'Add Clinical Note',
-                          style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Record treatment observation or diagnostic note for ${widget.patientName}.',
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    AppTextField(
+                      controller: _titleController,
+                      label: 'Note Subject / Procedure Title',
+                      hint: 'e.g. Post-operative evaluation or Restorative assessment',
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Please enter a note title';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    AppTextField(
+                      controller: _contentController,
+                      label: 'Clinical Remarks & Observations',
+                      hint: 'Enter detailed clinical findings, anesthesia used, post-op instructions...',
+                      maxLines: 5,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Please enter clinical remarks';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          PrimaryButton(
+                            text: 'Save Clinical Note',
+                            isLoading: _isLoading,
+                            onPressed: _handleSubmit,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Record treatment observation or diagnostic note for ${widget.patientName}.',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                AppTextField(
-                  controller: _titleController,
-                  label: 'Note Subject / Procedure Title',
-                  hint: 'e.g. Post-operative evaluation or Restorative assessment',
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter a note title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                AppTextField(
-                  controller: _contentController,
-                  label: 'Clinical Remarks & Observations',
-                  hint: 'Enter detailed clinical findings, anesthesia used, post-op instructions...',
-                  maxLines: 5,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter clinical remarks';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    PrimaryButton(
-                      text: 'Save Clinical Note',
-                      isLoading: _isLoading,
-                      onPressed: _handleSubmit,
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

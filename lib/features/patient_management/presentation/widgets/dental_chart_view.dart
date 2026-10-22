@@ -48,8 +48,11 @@ class _DentalChartViewState extends State<DentalChartView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.sm,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

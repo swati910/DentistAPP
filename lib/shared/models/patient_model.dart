@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
+import 'medical_history_model.dart';
 
 enum PatientGender {
   male,
@@ -385,6 +386,7 @@ class PatientModel extends Equatable {
   final List<AiScanRecord> aiScans;
   final List<PatientAppointment> appointments;
   final List<ClinicalNote> clinicalNotes;
+  final MedicalHistoryModel? medicalHistory;
 
   const PatientModel({
     required this.id,
@@ -423,7 +425,16 @@ class PatientModel extends Equatable {
     this.aiScans = const [],
     this.appointments = const [],
     this.clinicalNotes = const [],
+    this.medicalHistory,
   });
+
+  MedicalHistoryModel get resolvedMedicalHistory =>
+      medicalHistory ??
+      MedicalHistoryModel.fromLegacyLists(
+        allergies: allergies,
+        chronicConditions: chronicConditions,
+        currentMedications: currentMedications,
+      );
 
   String get fullName => '$firstName $lastName'.trim();
 
@@ -479,6 +490,7 @@ class PatientModel extends Equatable {
     List<AiScanRecord>? aiScans,
     List<PatientAppointment>? appointments,
     List<ClinicalNote>? clinicalNotes,
+    MedicalHistoryModel? medicalHistory,
   }) {
     return PatientModel(
       id: id ?? this.id,
@@ -517,6 +529,7 @@ class PatientModel extends Equatable {
       aiScans: aiScans ?? this.aiScans,
       appointments: appointments ?? this.appointments,
       clinicalNotes: clinicalNotes ?? this.clinicalNotes,
+      medicalHistory: medicalHistory ?? this.medicalHistory,
     );
   }
 
@@ -558,5 +571,6 @@ class PatientModel extends Equatable {
         aiScans,
         appointments,
         clinicalNotes,
+        medicalHistory,
       ];
 }

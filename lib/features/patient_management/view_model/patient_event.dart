@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../shared/models/medical_history_model.dart';
 import '../../../shared/models/patient_model.dart';
 import '../../../shared/models/user_model.dart';
 
@@ -141,3 +142,171 @@ class ScheduleAppointmentSubmitted extends PatientEvent {
         currentUser,
       ];
 }
+
+class AddOrUpdateMedicalAllergySubmitted extends PatientEvent {
+  final String patientId;
+  final MedicalAllergyItem allergy;
+  final UserModel currentUser;
+
+  const AddOrUpdateMedicalAllergySubmitted({
+    required this.patientId,
+    required this.allergy,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, allergy, currentUser];
+}
+
+class DeleteMedicalAllergySubmitted extends PatientEvent {
+  final String patientId;
+  final String allergyId;
+  final UserModel currentUser;
+
+  const DeleteMedicalAllergySubmitted({
+    required this.patientId,
+    required this.allergyId,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, allergyId, currentUser];
+}
+
+class UpdatePatientAllergyStatusSubmitted extends PatientEvent {
+  final String patientId;
+  final AllergyStatus status;
+  final UserModel currentUser;
+  final String? notes;
+
+  const UpdatePatientAllergyStatusSubmitted({
+    required this.patientId,
+    required this.status,
+    required this.currentUser,
+    this.notes,
+  });
+
+  @override
+  List<Object?> get props => [patientId, status, currentUser, notes];
+}
+
+class AddOrUpdateMedicalConditionSubmitted extends PatientEvent {
+  final String patientId;
+  final MedicalConditionItem condition;
+  final UserModel currentUser;
+
+  const AddOrUpdateMedicalConditionSubmitted({
+    required this.patientId,
+    required this.condition,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, condition, currentUser];
+}
+
+class DeleteMedicalConditionSubmitted extends PatientEvent {
+  final String patientId;
+  final String conditionId;
+  final UserModel currentUser;
+
+  const DeleteMedicalConditionSubmitted({
+    required this.patientId,
+    required this.conditionId,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, conditionId, currentUser];
+}
+
+class AddOrUpdateMedicationSubmitted extends PatientEvent {
+  final String patientId;
+  final MedicationItem medication;
+  final UserModel currentUser;
+
+  const AddOrUpdateMedicationSubmitted({
+    required this.patientId,
+    required this.medication,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, medication, currentUser];
+}
+
+class DeleteMedicationSubmitted extends PatientEvent {
+  final String patientId;
+  final String medicationId;
+  final UserModel currentUser;
+
+  const DeleteMedicationSubmitted({
+    required this.patientId,
+    required this.medicationId,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, medicationId, currentUser];
+}
+
+class AddOrUpdatePastMedicalHistorySubmitted extends PatientEvent {
+  final String patientId;
+  final PastMedicalHistoryItem item;
+  final UserModel currentUser;
+
+  const AddOrUpdatePastMedicalHistorySubmitted({
+    required this.patientId,
+    required this.item,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, item, currentUser];
+}
+
+class DeletePastMedicalHistorySubmitted extends PatientEvent {
+  final String patientId;
+  final String itemId;
+  final UserModel currentUser;
+
+  const DeletePastMedicalHistorySubmitted({
+    required this.patientId,
+    required this.itemId,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, itemId, currentUser];
+}
+
+class UpdatePastDentalHistorySubmitted extends PatientEvent {
+  final String patientId;
+  final PastDentalHistory dentalHistory;
+  final UserModel currentUser;
+
+  const UpdatePastDentalHistorySubmitted({
+    required this.patientId,
+    required this.dentalHistory,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, dentalHistory, currentUser];
+}
+
+class UpdateAdditionalMedicalInfoSubmitted extends PatientEvent {
+  final String patientId;
+  final AdditionalMedicalInfo additionalInfo;
+  final UserModel currentUser;
+
+  const UpdateAdditionalMedicalInfoSubmitted({
+    required this.patientId,
+    required this.additionalInfo,
+    required this.currentUser,
+  });
+
+  @override
+  List<Object?> get props => [patientId, additionalInfo, currentUser];
+}
+

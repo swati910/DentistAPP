@@ -70,6 +70,7 @@ class UserPermissions extends Equatable {
   final bool canChangeUserRole;
   final bool canEditClinicSettings;
   final bool canManageSubscription;
+  final bool canEditMedicalHistory;
 
   const UserPermissions({
     this.canInviteUsers = false,
@@ -78,6 +79,7 @@ class UserPermissions extends Equatable {
     this.canChangeUserRole = false,
     this.canEditClinicSettings = false,
     this.canManageSubscription = false,
+    this.canEditMedicalHistory = false,
   });
 
   factory UserPermissions.fromRole(UserRole role) {
@@ -90,6 +92,7 @@ class UserPermissions extends Equatable {
           canChangeUserRole: true,
           canEditClinicSettings: true,
           canManageSubscription: true,
+          canEditMedicalHistory: true,
         );
       case UserRole.dentist:
         return const UserPermissions(
@@ -99,6 +102,7 @@ class UserPermissions extends Equatable {
           canChangeUserRole: false,
           canEditClinicSettings: false,
           canManageSubscription: false,
+          canEditMedicalHistory: true,
         );
       case UserRole.staff:
         return const UserPermissions(
@@ -108,6 +112,7 @@ class UserPermissions extends Equatable {
           canChangeUserRole: false,
           canEditClinicSettings: false,
           canManageSubscription: false,
+          canEditMedicalHistory: false,
         );
     }
   }
@@ -120,6 +125,7 @@ class UserPermissions extends Equatable {
         canChangeUserRole,
         canEditClinicSettings,
         canManageSubscription,
+        canEditMedicalHistory,
       ];
 }
 
@@ -149,6 +155,11 @@ class UserModel extends Equatable {
   });
 
   String get fullName => '$firstName $lastName'.trim();
+
+  bool get canManageMedicalHistory =>
+      role == UserRole.administrator ||
+      role == UserRole.dentist ||
+      permissions.canEditMedicalHistory;
 
   UserModel copyWith({
     String? id,

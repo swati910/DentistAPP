@@ -22,86 +22,97 @@ class PatientSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 360;
+
+        return AppCard(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          onTap: onTap,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.25),
-                    width: 1.5,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  patient.initials,
-                  style: AppTypography.titleSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            patient.fullName,
-                            style: AppTypography.titleMedium.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: AppSpacing.borderRadiusSm,
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Text(
-                            patient.patientNumber,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${patient.age} yrs • ${patient.gender.displayName} • ${patient.bloodGroup}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        width: 1.5,
                       ),
                     ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      patient.initials,
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: AppSpacing.xs,
+                          runSpacing: 2,
+                          children: [
+                            Text(
+                              patient.fullName,
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                borderRadius: AppSpacing.borderRadiusSm,
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Text(
+                                patient.patientNumber,
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${patient.age} yrs • ${patient.gender.displayName} • ${patient.bloodGroup}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (isCompact) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          _buildRiskBadge(patient.riskLevel),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (!isCompact) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    _buildRiskBadge(patient.riskLevel),
                   ],
-                ),
+                ],
               ),
-              _buildRiskBadge(patient.riskLevel),
-            ],
-          ),
           const SizedBox(height: AppSpacing.sm),
           const Divider(height: 1, color: AppColors.border),
           const SizedBox(height: AppSpacing.sm),
@@ -157,8 +168,11 @@ class PatientSummaryCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -167,6 +181,7 @@ class PatientSummaryCard extends StatelessWidget {
                   borderRadius: AppSpacing.borderRadiusSm,
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
                       Icons.psychology_alt_outlined,
@@ -186,6 +201,7 @@ class PatientSummaryCard extends StatelessWidget {
                 ),
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (onAddNote != null)
                     IconButton(
@@ -211,7 +227,9 @@ class PatientSummaryCard extends StatelessWidget {
         ],
       ),
     );
-  }
+  },
+);
+}
 
   Widget _buildRiskBadge(PatientRiskLevel risk) {
     StatusBadgeVariant variant;

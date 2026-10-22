@@ -31,9 +31,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _onSubmit() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<PasswordRecoveryBloc>().add(
-            RequestResetSubmitted(_emailController.text),
-          );
+      final email = _emailController.text.trim();
+      context.read<PasswordRecoveryBloc>().add(RequestResetSubmitted(email));
     }
   }
 
@@ -47,8 +46,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       },
       builder: (context, state) {
         return AuthLayout(
-          title: 'Reset Password',
-          subtitle: 'Enter your registered clinic email to receive a 6-digit verification code.',
+          title: 'Forgot Password?',
+          subtitle:
+              'Enter your registered clinic email address below. We will send a 6-digit recovery code to reset your account password.',
           footer: _buildBackToLogin(context),
           child: Form(
             key: _formKey,
@@ -65,9 +65,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ],
                 AppEmailField(
                   controller: _emailController,
+                  label: 'Registered Clinic Email *',
+                  hint: 'dentist@clinic.com',
                   enabled: !state.isLoading,
                 ),
+                const SizedBox(height: AppSpacing.md),
+
+                Container(
+                  padding: AppSpacing.paddingSm,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer.withAlpha(40),
+                    borderRadius: AppSpacing.borderRadiusSm,
+                    border: Border.all(color: AppColors.primary.withAlpha(40)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.shield_outlined, color: AppColors.primary, size: 20),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          'For security, if the email matches an active clinic account, a 6-digit verification code will be dispatched immediately.',
+                          style: AppTypography.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.lg),
+
                 PrimaryButton(
                   text: 'Send Verification Code',
                   isLoading: state.isLoading,

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../features/authentication/presentation/login_screen.dart';
 import '../../features/clinic_onboarding/presentation/clinic_onboarding_screen.dart';
-import '../../features/clinic_settings/presentation/clinic_settings_screen.dart';
+import '../../features/clinic_settings/presentation/profile_screen.dart';
 import '../../features/onboarding_status/presentation/onboarding_status_screen.dart';
 import '../../features/password_recovery/presentation/forgot_password_screen.dart';
 import '../../features/password_recovery/presentation/new_password_screen.dart';
 import '../../features/password_recovery/presentation/password_reset_success_screen.dart';
 import '../../features/password_recovery/presentation/reset_code_screen.dart';
 import '../../features/payment/presentation/payment_checkout_screen.dart';
-import '../../features/subscription/presentation/current_subscription_screen.dart';
-import '../../features/subscription/presentation/subscription_plans_screen.dart';
+import '../../features/subscription/presentation/unified_subscription_screen.dart';
 import '../../features/patient_management/presentation/patient_details_screen.dart';
 import '../../features/patient_management/presentation/patient_list_screen.dart';
 import '../../features/patient_management/presentation/register_patient_screen.dart';
@@ -41,9 +40,16 @@ class AppRouter {
         );
 
       case RouteNames.resetCode:
+        String? resetToken;
+        if (settings.arguments is String) {
+          resetToken = settings.arguments as String;
+        } else if (settings.arguments is Map) {
+          final map = settings.arguments as Map;
+          resetToken = map['token'] as String?;
+        }
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const ResetCodeScreen(),
+          builder: (_) => ResetCodeScreen(token: resetToken),
         );
 
       case RouteNames.newPassword:
@@ -65,10 +71,18 @@ class AppRouter {
         );
 
       case RouteNames.emailVerification:
-        final email = settings.arguments as String? ?? 'contact@apexdental.com';
+        String email = 'contact@apexdental.com';
+        String? token;
+        if (settings.arguments is String) {
+          email = settings.arguments as String;
+        } else if (settings.arguments is Map) {
+          final map = settings.arguments as Map;
+          email = map['email'] as String? ?? email;
+          token = map['token'] as String?;
+        }
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => EmailVerificationScreen(email: email),
+          builder: (_) => EmailVerificationScreen(email: email, token: token),
         );
 
       case RouteNames.otpVerification:
@@ -87,7 +101,7 @@ class AppRouter {
       case RouteNames.subscriptionPlans:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const SubscriptionPlansScreen(),
+          builder: (_) => const UnifiedSubscriptionScreen(),
         );
 
       case RouteNames.subscriptionCheckout:
@@ -109,13 +123,19 @@ class AppRouter {
       case RouteNames.subscriptionStatus:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const CurrentSubscriptionScreen(),
+          builder: (_) => const UnifiedSubscriptionScreen(),
+        );
+
+      case RouteNames.profile:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const ProfileScreen(initialTabIndex: 0),
         );
 
       case RouteNames.clinicSettings:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const ClinicSettingsScreen(),
+          builder: (_) => const ProfileScreen(initialTabIndex: 1),
         );
 
       case RouteNames.users:
@@ -143,10 +163,23 @@ class AppRouter {
         );
 
       case RouteNames.patientDetails:
-        final patient = settings.arguments as PatientModel;
+        PatientModel? patient;
+        String? patientId;
+        if (settings.arguments is PatientModel) {
+          patient = settings.arguments as PatientModel;
+        } else if (settings.arguments is String) {
+          patientId = settings.arguments as String;
+        } else if (settings.arguments is Map) {
+          final map = settings.arguments as Map;
+          patient = map['patient'] as PatientModel?;
+          patientId = map['id'] as String? ?? map['patientId'] as String?;
+        }
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => PatientDetailsScreen(patient: patient),
+          builder: (_) => PatientDetailsScreen(
+            patient: patient,
+            patientId: patientId ?? patient?.id ?? 'pat-001',
+          ),
         );
 
       case RouteNames.editPatient:

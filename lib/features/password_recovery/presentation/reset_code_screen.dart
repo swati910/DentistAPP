@@ -14,14 +14,27 @@ import '../view_model/password_recovery_event.dart';
 import '../view_model/password_recovery_state.dart';
 
 class ResetCodeScreen extends StatefulWidget {
-  const ResetCodeScreen({super.key});
+  final String? token;
+
+  const ResetCodeScreen({super.key, this.token});
 
   @override
   State<ResetCodeScreen> createState() => _ResetCodeScreenState();
 }
 
 class _ResetCodeScreenState extends State<ResetCodeScreen> {
+  final _otpFieldKey = GlobalKey<AppOtpFieldState>();
   String _enteredCode = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.token != null && widget.token!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<PasswordRecoveryBloc>().add(ResetTokenSubmitted(widget.token!));
+      });
+    }
+  }
 
   void _onVerifyCode(String code) {
     if (code.length == 6) {
@@ -42,7 +55,7 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
 
         return AuthLayout(
           title: 'Enter Verification Code',
-          subtitle: 'We sent a 6-digit verification code to $emailDisplay.',
+          subtitle: 'We sent a 6-digit password recovery code to $emailDisplay.',
           footer: _buildFooter(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,6 +65,30 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
                   title: 'Verification Failed',
                   message: state.errorMessage,
                   type: StatusType.error,
+                  action: state.errorMessage!.toLowerCase().contains('expired') ||
+                          state.errorMessage!.toLowerCase().contains('incorrect')
+                      ? Row(
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                _otpFieldKey.currentState?.clear();
+                                setState(() => _enteredCode = '');
+                              },
+                              child: const Text('Clear Code'),
+                            ),
+                            if (state.canResend) ...[
+                              const SizedBox(width: AppSpacing.sm),
+                              TextButton(
+                                onPressed: () {
+                                  _otpFieldKey.currentState?.clear();
+                                  context.read<PasswordRecoveryBloc>().add(ResendResetCodeRequested());
+                                },
+                                child: const Text('Resend Code'),
+                              ),
+                            ],
+                          ],
+                        )
+                      : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -65,6 +102,7 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
               ],
 
               AppOtpField(
+                key: _otpFieldKey,
                 length: 6,
                 enabled: !state.isLoading,
                 onChanged: (code) => setState(() => _enteredCode = code),
@@ -72,7 +110,7 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // Demo hint box
+              // Demo code guidance
               Container(
                 padding: AppSpacing.paddingSm,
                 decoration: BoxDecoration(
@@ -80,13 +118,20 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
                   borderRadius: AppSpacing.borderRadiusSm,
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(Icons.info_outline_rounded, color: AppColors.info, size: 18),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: Text(
-                        'Demo Codes: Use 123456 to succeed, or 000000 to test expired code.',
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.info),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('DEMO RESET CODES:', style: AppTypography.labelSmall.copyWith(color: AppColors.info, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 2),
+                          Text('• 123456 — Valid code (advances to password creation)', style: AppTypography.bodySmall.copyWith(fontSize: 11)),
+                          Text('• 000000 — Expired code simulation', style: AppTypography.bodySmall.copyWith(fontSize: 11)),
+                          Text('• 888888 — Already used code', style: AppTypography.bodySmall.copyWith(fontSize: 11)),
+                        ],
                       ),
                     ),
                   ],
@@ -97,6 +142,7 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
               PrimaryButton(
                 text: 'Verify Code',
                 isLoading: state.isLoading,
+                icon: Icons.check_circle_outline_rounded,
                 onPressed: _enteredCode.length == 6 ? () => _onVerifyCode(_enteredCode) : null,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -106,7 +152,10 @@ class _ResetCodeScreenState extends State<ResetCodeScreen> {
                     ? TextButton.icon(
                         onPressed: state.isLoading
                             ? null
-                            : () => context.read<PasswordRecoveryBloc>().add(ResendResetCodeRequested()),
+                            : () {
+                                _otpFieldKey.currentState?.clear();
+                                context.read<PasswordRecoveryBloc>().add(ResendResetCodeRequested());
+                              },
                         icon: const Icon(Icons.refresh_rounded, size: 16),
                         label: const Text('Resend Code'),
                       )

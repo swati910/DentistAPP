@@ -53,9 +53,12 @@ class PrimaryButton extends StatelessWidget {
                     Icon(icon, size: 18, color: Colors.white),
                     const SizedBox(width: AppSpacing.sm),
                   ],
-                  Text(
-                    text,
-                    style: AppTypography.labelLarge.copyWith(color: Colors.white),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: AppTypography.labelLarge.copyWith(color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -109,9 +112,12 @@ class SecondaryButton extends StatelessWidget {
                     Icon(icon, size: 18, color: AppColors.textPrimary),
                     const SizedBox(width: AppSpacing.sm),
                   ],
-                  Text(
-                    text,
-                    style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -167,10 +173,13 @@ class OutlineButton extends StatelessWidget {
                     Icon(icon, size: 18, color: textColor ?? AppColors.primary),
                     const SizedBox(width: AppSpacing.sm),
                   ],
-                  Text(
-                    text,
-                    style: AppTypography.labelLarge.copyWith(
-                      color: textColor ?? AppColors.primary,
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: textColor ?? AppColors.primary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

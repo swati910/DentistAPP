@@ -7,6 +7,8 @@ class VerificationState extends Equatable {
   final String? errorMessage;
   final String? successMessage;
   final int resendCooldownSeconds;
+  final String email;
+  final bool isTokenVerification;
 
   const VerificationState({
     this.status = Status.idle,
@@ -14,6 +16,8 @@ class VerificationState extends Equatable {
     this.errorMessage,
     this.successMessage,
     this.resendCooldownSeconds = 0,
+    this.email = '',
+    this.isTokenVerification = false,
   });
 
   bool get isLoading => status == Status.loading;
@@ -25,6 +29,8 @@ class VerificationState extends Equatable {
     String? errorMessage,
     String? successMessage,
     int? resendCooldownSeconds,
+    String? email,
+    bool? isTokenVerification,
   }) {
     return VerificationState(
       status: status ?? this.status,
@@ -32,6 +38,8 @@ class VerificationState extends Equatable {
       errorMessage: errorMessage,
       successMessage: successMessage,
       resendCooldownSeconds: resendCooldownSeconds ?? this.resendCooldownSeconds,
+      email: email ?? this.email,
+      isTokenVerification: isTokenVerification ?? this.isTokenVerification,
     );
   }
 
@@ -42,5 +50,7 @@ class VerificationState extends Equatable {
         errorMessage,
         successMessage,
         resendCooldownSeconds,
+        email,
+        isTokenVerification,
       ];
 }

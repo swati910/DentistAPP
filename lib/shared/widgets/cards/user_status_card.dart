@@ -26,142 +26,205 @@ class UserStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       padding: AppSpacing.paddingMd,
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                width: 1.5,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : 'U',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 460;
+
+          if (isNarrow) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        user.fullName,
-                        style: AppTypography.titleMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    _buildAvatar(),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.fullName,
+                            style: AppTypography.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          _buildRoleBadge(user.role),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    _buildRoleBadge(user.role),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.email_outlined,
-                      size: 13,
-                      color: AppColors.textTertiary,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        user.email,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                if (user.phone != null && user.phone!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.phone_outlined,
-                        size: 13,
-                        color: AppColors.textTertiary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        user.phone!,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                    _buildStatusBadge(user.status),
+                    if (canManage) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      _buildMenu(context),
                     ],
-                  ),
-                ],
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const Divider(height: 1, color: AppColors.border),
+                const SizedBox(height: AppSpacing.xs),
+                _buildContactInfo(),
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              _buildAvatar(),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.fullName,
+                            style: AppTypography.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        _buildRoleBadge(user.role),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    _buildContactInfo(),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _buildStatusBadge(user.status),
+              if (canManage) ...[
+                const SizedBox(width: AppSpacing.xs),
+                _buildMenu(context),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.primaryContainer,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : 'U',
+        style: AppTypography.titleMedium.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.email_outlined,
+              size: 13,
+              color: AppColors.textTertiary,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                user.email,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        if (user.phone != null && user.phone!.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              const Icon(
+                Icons.phone_outlined,
+                size: 13,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                user.phone!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMenu(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.textSecondary),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppSpacing.borderRadiusSm,
+      ),
+      onSelected: (action) {
+        if (action == 'activate') onActivate?.call();
+        if (action == 'deactivate') onDeactivate?.call();
+        if (action == 'role') onChangeRole?.call();
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'role',
+          child: Row(
+            children: [
+              Icon(Icons.badge_outlined, size: 18, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text('Change Role'),
+            ],
+          ),
+        ),
+        if (user.status == UserStatus.active)
+          const PopupMenuItem(
+            value: 'deactivate',
+            child: Row(
+              children: [
+                Icon(Icons.block_rounded, size: 18, color: AppColors.error),
+                SizedBox(width: 8),
+                Text('Deactivate User', style: TextStyle(color: AppColors.error)),
+              ],
+            ),
+          )
+        else
+          const PopupMenuItem(
+            value: 'activate',
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.success),
+                SizedBox(width: 8),
+                Text('Activate User', style: TextStyle(color: AppColors.success)),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          _buildStatusBadge(user.status),
-          if (canManage) ...[
-            const SizedBox(width: AppSpacing.xs),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.textSecondary),
-              shape: RoundedRectangleBorder(
-                borderRadius: AppSpacing.borderRadiusSm,
-              ),
-              onSelected: (action) {
-                if (action == 'activate') onActivate?.call();
-                if (action == 'deactivate') onDeactivate?.call();
-                if (action == 'role') onChangeRole?.call();
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'role',
-                  child: Row(
-                    children: [
-                      Icon(Icons.badge_outlined, size: 18, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text('Change Role'),
-                    ],
-                  ),
-                ),
-                if (user.status == UserStatus.active)
-                  const PopupMenuItem(
-                    value: 'deactivate',
-                    child: Row(
-                      children: [
-                        Icon(Icons.block_rounded, size: 18, color: AppColors.error),
-                        SizedBox(width: 8),
-                        Text('Deactivate User', style: TextStyle(color: AppColors.error)),
-                      ],
-                    ),
-                  )
-                else
-                  const PopupMenuItem(
-                    value: 'activate',
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.success),
-                        SizedBox(width: 8),
-                        Text('Activate User', style: TextStyle(color: AppColors.success)),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ),
+      ],
     );
   }
 

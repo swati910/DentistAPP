@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_icons.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
@@ -97,134 +98,157 @@ class _ScheduleAppointmentDialogState extends State<ScheduleAppointmentDialog> {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusLg),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 540),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.xs),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: AppSpacing.borderRadiusSm,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(AppSpacing.xs),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryContainer,
+                                  borderRadius: AppSpacing.borderRadiusSm,
+                                ),
+                                child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Flexible(
+                                child: Text(
+                                  'Schedule Visit',
+                                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          'Schedule Visit',
-                          style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Book a clinical chair appointment for ${widget.patientName}.',
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Book a clinical chair appointment for ${widget.patientName}.',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.lg),
 
-                // Date Picker Button
-                InkWell(
-                  onTap: _pickDate,
-                  borderRadius: AppSpacing.borderRadiusSm,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant.withAlpha(90),
+                    // Date Picker Button
+                    InkWell(
+                      onTap: _pickDate,
                       borderRadius: AppSpacing.borderRadiusSm,
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant.withAlpha(90),
+                          borderRadius: AppSpacing.borderRadiusSm,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Icon(Icons.calendar_month_outlined, color: AppColors.primary, size: 20),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              dateFormat.format(_selectedDate),
-                              style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(AppIcons.calendar, color: AppColors.primary, size: 20),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Flexible(
+                                    child: Text(
+                                      dateFormat.format(_selectedDate),
+                                      style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Text(
+                              'Change Date',
+                              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ],
                         ),
-                        const Text('Change Date', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13)),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.md),
 
-                AppDropdown<String>(
-                  label: 'Time Slot',
-                  value: _selectedTimeSlot,
-                  items: _timeSlots
-                      .map((slot) => DropdownMenuItem(value: slot, child: Text(slot)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _selectedTimeSlot = val);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                AppDropdown<String>(
-                  label: 'Attending Practitioner',
-                  value: _selectedDentist,
-                  items: _dentists
-                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _selectedDentist = val);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                AppDropdown<String>(
-                  label: 'Clinical Procedure',
-                  value: _procedures.contains(_procedureController.text) ? _procedureController.text : _procedures.first,
-                  items: _procedures
-                      .map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _procedureController.text = val);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                    AppDropdown<String>(
+                      label: 'Time Slot',
+                      value: _selectedTimeSlot,
+                      items: _timeSlots
+                          .map((slot) => DropdownMenuItem(value: slot, child: Text(slot)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedTimeSlot = val);
+                      },
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    PrimaryButton(
-                      text: 'Confirm Appointment',
-                      onPressed: _handleSubmit,
+                    const SizedBox(height: AppSpacing.md),
+
+                    AppDropdown<String>(
+                      label: 'Attending Practitioner',
+                      value: _selectedDentist,
+                      items: _dentists
+                          .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedDentist = val);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    AppDropdown<String>(
+                      label: 'Clinical Procedure',
+                      value: _procedures.contains(_procedureController.text) ? _procedureController.text : _procedures.first,
+                      items: _procedures
+                          .map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _procedureController.text = val);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          PrimaryButton(
+                            text: 'Confirm Appointment',
+                            onPressed: _handleSubmit,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

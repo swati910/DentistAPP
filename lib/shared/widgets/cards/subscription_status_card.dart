@@ -77,28 +77,32 @@ class SubscriptionStatusCard extends StatelessWidget {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'CURRENT PLAN',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.textTertiary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CURRENT PLAN',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.textTertiary,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        subscription.plan.name,
-                        style: AppTypography.headlineLarge.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.3,
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          subscription.plan.name,
+                          style: AppTypography.headlineLarge.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: AppSpacing.sm),
                   _buildStatusBadge(subscription.status),
                 ],
               ),

@@ -37,39 +37,44 @@ class ErrorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: AppSpacing.paddingLg,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 24),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(title, style: AppTypography.titleLarge.copyWith(color: AppColors.error)),
+                  Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 24),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(title, style: AppTypography.titleLarge.copyWith(color: AppColors.error)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(message, style: AppTypography.bodyMedium),
+                  const SizedBox(height: AppSpacing.xl),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: PrimaryButton(
+                      text: closeText,
+                      width: 100,
+                      height: 38,
+                      backgroundColor: AppColors.error,
+                      onPressed: onClose ?? () => Navigator.of(context).pop(),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(message, style: AppTypography.bodyMedium),
-              const SizedBox(height: AppSpacing.xl),
-              Align(
-                alignment: Alignment.centerRight,
-                child: PrimaryButton(
-                  text: closeText,
-                  width: 100,
-                  height: 38,
-                  backgroundColor: AppColors.error,
-                  onPressed: onClose ?? () => Navigator.of(context).pop(),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -110,39 +115,44 @@ class SuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: AppSpacing.paddingLg,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 24),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(title, style: AppTypography.titleLarge.copyWith(color: AppColors.success)),
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 24),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(title, style: AppTypography.titleLarge.copyWith(color: AppColors.success)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(message, style: AppTypography.bodyMedium),
+                  const SizedBox(height: AppSpacing.xl),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: PrimaryButton(
+                      text: actionText,
+                      width: 120,
+                      height: 38,
+                      backgroundColor: AppColors.success,
+                      onPressed: onAction ?? () => Navigator.of(context).pop(),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(message, style: AppTypography.bodyMedium),
-              const SizedBox(height: AppSpacing.xl),
-              Align(
-                alignment: Alignment.centerRight,
-                child: PrimaryButton(
-                  text: actionText,
-                  width: 120,
-                  height: 38,
-                  backgroundColor: AppColors.success,
-                  onPressed: onAction ?? () => Navigator.of(context).pop(),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

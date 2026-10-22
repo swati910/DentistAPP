@@ -16,6 +16,7 @@ class PasswordRecoveryBloc extends Bloc<PasswordRecoveryEvent, PasswordRecoveryS
         super(const PasswordRecoveryState()) {
     on<RequestResetSubmitted>(_onRequestResetSubmitted);
     on<ResetCodeSubmitted>(_onResetCodeSubmitted);
+    on<ResetTokenSubmitted>(_onResetTokenSubmitted);
     on<ResendResetCodeRequested>(_onResendResetCodeRequested);
     on<NewPasswordSubmitted>(_onNewPasswordSubmitted);
     on<PasswordCooldownTicked>(_onPasswordCooldownTicked);
@@ -79,6 +80,32 @@ class PasswordRecoveryBloc extends Bloc<PasswordRecoveryEvent, PasswordRecoveryS
     }
   }
 
+  Future<void> _onResetTokenSubmitted(
+    ResetTokenSubmitted event,
+    Emitter<PasswordRecoveryState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+
+    try {
+      final token = await _repository.verifyResetToken(token: event.token);
+      emit(state.copyWith(
+        status: Status.success,
+        step: PasswordRecoveryStep.newPassword,
+        resetToken: token,
+      ));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+        status: Status.error,
+        errorMessage: e.message,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: Status.error,
+        errorMessage: 'Invalid or expired reset token. Please request a new code.',
+      ));
+    }
+  }
+
   Future<void> _onResendResetCodeRequested(
     ResendResetCodeRequested event,
     Emitter<PasswordRecoveryState> emit,
@@ -99,6 +126,11 @@ class PasswordRecoveryBloc extends Bloc<PasswordRecoveryEvent, PasswordRecoveryS
         status: Status.error,
         errorMessage: e.message,
       ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: Status.error,
+        errorMessage: 'Failed to resend code. Please try again.',
+      ));
     }
   }
 
@@ -116,6 +148,7 @@ class PasswordRecoveryBloc extends Bloc<PasswordRecoveryEvent, PasswordRecoveryS
       emit(state.copyWith(
         status: Status.success,
         step: PasswordRecoveryStep.success,
+        resetToken: null,
       ));
     } on AppException catch (e) {
       emit(state.copyWith(
@@ -130,11 +163,17 @@ class PasswordRecoveryBloc extends Bloc<PasswordRecoveryEvent, PasswordRecoveryS
     }
   }
 
-  void _onPasswordCooldownTicked(PasswordCooldownTicked event, Emitter<PasswordRecoveryState> emit) {
+  void _onPasswordCooldownTicked(
+    PasswordCooldownTicked event,
+    Emitter<PasswordRecoveryState> emit,
+  ) {
     emit(state.copyWith(resendCooldownSeconds: event.secondsRemaining));
   }
 
-  void _onResetFlowReset(ResetFlowReset event, Emitter<PasswordRecoveryState> emit) {
+  void _onResetFlowReset(
+    ResetFlowReset event,
+    Emitter<PasswordRecoveryState> emit,
+  ) {
     _cooldownTimer?.cancel();
     emit(const PasswordRecoveryState());
   }

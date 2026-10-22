@@ -13,7 +13,10 @@ class AppConstants {
   static const int minPasswordLength = 8;
 
   // Responsive Breakpoints
+  static const double smallMobileBreakpoint = 375;
   static const double mobileBreakpoint = 600;
   static const double tabletBreakpoint = 768;
-  static const double desktopBreakpoint = 1024;
+  static const double laptopBreakpoint = 1024;
+  static const double desktopBreakpoint = 1280;
+  static const double largeDesktopBreakpoint = 1600;
 }

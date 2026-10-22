@@ -49,50 +49,59 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Padding(
-          padding: AppSpacing.paddingLg,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 360;
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    isDestructive ? Icons.warning_amber_rounded : Icons.help_outline_rounded,
-                    color: isDestructive ? AppColors.error : AppColors.primary,
-                    size: 24,
+                  Row(
+                    children: [
+                      Icon(
+                        isDestructive ? Icons.warning_amber_rounded : Icons.help_outline_rounded,
+                        color: isDestructive ? AppColors.error : AppColors.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(title, style: AppTypography.titleLarge),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(title, style: AppTypography.titleLarge),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(message, style: AppTypography.bodyMedium),
+                  const SizedBox(height: AppSpacing.xl),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        OutlinedButton(
+                          onPressed: onCancel ?? () => Navigator.of(context).pop(false),
+                          child: Text(cancelText),
+                        ),
+                        PrimaryButton(
+                          text: confirmText,
+                          height: 40,
+                          backgroundColor: isDestructive ? AppColors.error : AppColors.primary,
+                          onPressed: onConfirm,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(message, style: AppTypography.bodyMedium),
-              const SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: onCancel ?? () => Navigator.of(context).pop(false),
-                    child: Text(cancelText),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  PrimaryButton(
-                    text: confirmText,
-                    width: 120,
-                    height: 40,
-                    backgroundColor: isDestructive ? AppColors.error : AppColors.primary,
-                    onPressed: onConfirm,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

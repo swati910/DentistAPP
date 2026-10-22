@@ -36,12 +36,28 @@ void main() {
       build: () => ClinicOnboardingBloc(repository: mockRepo),
       wait: const Duration(milliseconds: 1200),
       seed: () => const ClinicOnboardingState(
-        currentStep: 2,
+        currentStep: 3,
         formData: OnboardingFormData(
           clinicName: 'Apex Dental',
-          primaryContactName: 'Dr. Elena',
+          clinicType: 'Solo Dental Practice',
+          clinicEmail: 'clinic@apexdental.com',
+          clinicPhone: '+91 80 4123 4567',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          country: 'India',
+          postalCode: '560001',
+          adminFirstName: 'Elena',
+          adminLastName: 'Rostova',
+          adminEmail: 'elena@apexdental.com',
+          adminPhone: '+91 98765 43210',
+          adminRole: 'Clinic Owner / Chief Dentist',
+          password: 'Password123!',
+          confirmPassword: 'Password123!',
+          primaryContactName: 'Dr. Elena Rostova',
           primaryPhone: '+91 98765 43210',
-          primaryEmail: 'contact@apexdental.com',
+          primaryEmail: 'elena@apexdental.com',
+          preferredContactMethod: 'Email',
+          termsAccepted: true,
         ),
       ),
       act: (bloc) => bloc.add(SubmitOnboardingRequested()),
@@ -54,5 +70,19 @@ void main() {
         }),
       ],
     );
+
+    test('resets onboarding flow to step 0 with clean form data', () {
+      final bloc = ClinicOnboardingBloc(repository: mockRepo);
+      bloc.add(const StepChanged(3));
+      bloc.add(ResetOnboardingFlow());
+
+      expectLater(
+        bloc.stream,
+        emitsInOrder([
+          predicate<ClinicOnboardingState>((s) => s.currentStep == 3),
+          predicate<ClinicOnboardingState>((s) => s.currentStep == 0 && s.formData == const OnboardingFormData()),
+        ]),
+      );
+    });
   });
 }

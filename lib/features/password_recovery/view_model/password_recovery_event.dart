@@ -25,6 +25,15 @@ class ResetCodeSubmitted extends PasswordRecoveryEvent {
   List<Object?> get props => [code];
 }
 
+class ResetTokenSubmitted extends PasswordRecoveryEvent {
+  final String token;
+
+  const ResetTokenSubmitted(this.token);
+
+  @override
+  List<Object?> get props => [token];
+}
+
 class ResendResetCodeRequested extends PasswordRecoveryEvent {}
 
 class NewPasswordSubmitted extends PasswordRecoveryEvent {

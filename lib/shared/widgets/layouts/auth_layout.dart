@@ -28,7 +28,14 @@ class AuthLayout extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 960;
-            final horizontalPadding = constraints.maxWidth < 600 ? AppSpacing.md : AppSpacing.xl;
+            final horizontalPadding = constraints.maxWidth < 360
+                ? AppSpacing.sm
+                : (constraints.maxWidth < 600 ? AppSpacing.md : AppSpacing.xl);
+            final cardPadding = constraints.maxWidth < 400
+                ? const EdgeInsets.all(AppSpacing.md)
+                : (constraints.maxWidth < 600
+                    ? const EdgeInsets.all(AppSpacing.lg)
+                    : AppSpacing.paddingXl);
 
             return Center(
               child: SingleChildScrollView(
@@ -53,14 +60,14 @@ class AuthLayout extends StatelessWidget {
                             flex: 1,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(maxWidth: cardMaxWidth),
-                              child: _buildCardContent(isWide: true),
+                              child: _buildCardContent(isWide: true, cardPadding: cardPadding),
                             ),
                           ),
                         ],
                       )
                     : ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: cardMaxWidth),
-                        child: _buildCardContent(isWide: false),
+                        child: _buildCardContent(isWide: false, cardPadding: cardPadding),
                       ),
               ),
             );
@@ -70,7 +77,7 @@ class AuthLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildCardContent({required bool isWide}) {
+  Widget _buildCardContent({required bool isWide, required EdgeInsetsGeometry cardPadding}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,7 +87,7 @@ class AuthLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
         ],
         AppCard(
-          padding: AppSpacing.paddingXl,
+          padding: cardPadding,
           elevation: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

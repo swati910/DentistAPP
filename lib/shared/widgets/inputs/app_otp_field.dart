@@ -10,6 +10,7 @@ class AppOtpField extends StatefulWidget {
   final ValueChanged<String>? onCompleted;
   final ValueChanged<String>? onChanged;
   final bool enabled;
+  final String? initialValue;
 
   const AppOtpField({
     super.key,
@@ -17,20 +18,26 @@ class AppOtpField extends StatefulWidget {
     this.onCompleted,
     this.onChanged,
     this.enabled = true,
+    this.initialValue,
   });
 
   @override
-  State<AppOtpField> createState() => _AppOtpFieldState();
+  State<AppOtpField> createState() => AppOtpFieldState();
 }
 
-class _AppOtpFieldState extends State<AppOtpField> {
+class AppOtpFieldState extends State<AppOtpField> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
 
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(widget.length, (_) => TextEditingController());
+    _controllers = List.generate(widget.length, (index) {
+      final initialChar = (widget.initialValue != null && index < widget.initialValue!.length)
+          ? widget.initialValue![index]
+          : '';
+      return TextEditingController(text: initialChar);
+    });
     _focusNodes = List.generate(widget.length, (_) => FocusNode());
   }
 
@@ -47,7 +54,44 @@ class _AppOtpFieldState extends State<AppOtpField> {
 
   String get _otpCode => _controllers.map((c) => c.text).join();
 
+  void clear() {
+    for (var c in _controllers) {
+      c.clear();
+    }
+    widget.onChanged?.call('');
+    if (_focusNodes.isNotEmpty) {
+      _focusNodes[0].requestFocus();
+    }
+  }
+
+  void _handlePastedText(String text) {
+    final digits = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return;
+
+    for (int i = 0; i < widget.length; i++) {
+      if (i < digits.length) {
+        _controllers[i].text = digits[i];
+      } else {
+        _controllers[i].clear();
+      }
+    }
+
+    final targetIndex = (digits.length >= widget.length) ? widget.length - 1 : digits.length;
+    _focusNodes[targetIndex].requestFocus();
+
+    final code = _otpCode;
+    widget.onChanged?.call(code);
+    if (code.length == widget.length && AppValidators.otp(code) == null) {
+      widget.onCompleted?.call(code);
+    }
+  }
+
   void _onFieldChanged(int index, String value) {
+    if (value.length > 1) {
+      _handlePastedText(value);
+      return;
+    }
+
     if (value.length == 1) {
       if (index < widget.length - 1) {
         _focusNodes[index + 1].requestFocus();
@@ -67,49 +111,64 @@ class _AppOtpFieldState extends State<AppOtpField> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(widget.length, (index) {
-        return Flexible(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 48,
-                minWidth: 32,
-                maxHeight: 54,
-              ),
-              child: TextFormField(
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
-                enabled: widget.enabled,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                style: AppTypography.headlineMedium.copyWith(color: AppColors.primary),
-                maxLength: 1,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  counterText: '',
-                  contentPadding: EdgeInsets.zero,
-                  filled: true,
-                  fillColor: AppColors.surfaceVariant,
-                  border: OutlineInputBorder(
-                    borderRadius: AppSpacing.borderRadiusSm,
-                    borderSide: const BorderSide(color: AppColors.border),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boxWidth = ((constraints.maxWidth - (widget.length - 1) * 8) / widget.length)
+            .clamp(28.0, 48.0);
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(widget.length, (index) {
+            return Focus(
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.backspace &&
+                    _controllers[index].text.isEmpty &&
+                    index > 0) {
+                  _focusNodes[index - 1].requestFocus();
+                  _controllers[index - 1].clear();
+                  widget.onChanged?.call(_otpCode);
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: SizedBox(
+                width: boxWidth,
+                height: 54,
+                child: TextFormField(
+                  controller: _controllers[index],
+                  focusNode: _focusNodes[index],
+                  enabled: widget.enabled,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: AppSpacing.borderRadiusSm,
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  decoration: InputDecoration(
+                    counterText: '',
+                    contentPadding: EdgeInsets.zero,
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.borderRadiusSm,
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppSpacing.borderRadiusSm,
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    ),
                   ),
+                  onChanged: (val) => _onFieldChanged(index, val),
                 ),
-                onChanged: (val) => _onFieldChanged(index, val),
               ),
-            ),
-          ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 }

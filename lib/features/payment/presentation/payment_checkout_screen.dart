@@ -53,7 +53,10 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
+          padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.sizeOf(context).width < 360 ? AppSpacing.sm : AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 580),
             child: BlocConsumer<PaymentBloc, PaymentState>(
@@ -111,18 +114,49 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
 
                     // Order Summary Card
                     AppCard(
-                      padding: AppSpacing.paddingLg,
+                      padding: AppSpacing.paddingMd,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Order Summary', style: AppTypography.titleLarge),
                           const SizedBox(height: AppSpacing.md),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(widget.plan.name, style: AppTypography.headlineMedium),
-                              Text(widget.plan.formattedPrice, style: AppTypography.titleLarge.copyWith(color: AppColors.primary)),
-                            ],
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (constraints.maxWidth < 280) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.plan.name,
+                                      style: AppTypography.headlineMedium,
+                                    ),
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Text(
+                                      widget.plan.formattedPrice,
+                                      style: AppTypography.titleLarge.copyWith(color: AppColors.primary),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      widget.plan.name,
+                                      style: AppTypography.headlineMedium,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Text(
+                                    widget.plan.formattedPrice,
+                                    style: AppTypography.titleLarge.copyWith(color: AppColors.primary),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: AppSpacing.md),
                           const Divider(),
@@ -138,10 +172,19 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Due Today', style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w700)),
-                              Text(
-                                '${widget.plan.currency}${widget.plan.monthlyPrice.toStringAsFixed(0)}',
-                                style: AppTypography.headlineLarge.copyWith(color: AppColors.primary),
+                              Expanded(
+                                child: Text(
+                                  'Total Due Today',
+                                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '${widget.plan.currency}${widget.plan.monthlyPrice.toStringAsFixed(0)}',
+                                  style: AppTypography.headlineLarge.copyWith(color: AppColors.primary),
+                                ),
                               ),
                             ],
                           ),
@@ -167,6 +210,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                           const SizedBox(height: AppSpacing.xs),
                           Wrap(
                             spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.xs,
                             children: [
                               ChoiceChip(
                                 label: const Text('Success (Normal)'),
@@ -208,6 +252,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                     Center(
                       child: Text(
                         '🔒 256-Bit SSL Encrypted Healthcare Payment Gateway',
+                        textAlign: TextAlign.center,
                         style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
                       ),
                     ),
@@ -222,12 +267,40 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   }
 
   Widget _buildSummaryRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTypography.bodyMedium),
-        Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 280) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          );
+        }
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 4,
+              child: Text(label, style: AppTypography.bodyMedium),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              flex: 5,
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

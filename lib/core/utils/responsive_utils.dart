@@ -12,23 +12,38 @@ class ResponsiveUtils {
 
   static DeviceScreenType getDeviceType(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    if (width >= AppConstants.desktopBreakpoint) {
+    if (width >= AppConstants.laptopBreakpoint) {
       return DeviceScreenType.desktop;
     }
-    if (width >= AppConstants.mobileBreakpoint) {
+    if (width >= AppConstants.tabletBreakpoint) {
       return DeviceScreenType.tablet;
     }
     return DeviceScreenType.mobile;
   }
 
-  static bool isMobile(BuildContext context) =>
-      getDeviceType(context) == DeviceScreenType.mobile;
+  static bool isSmallMobile(BuildContext context) =>
+      MediaQuery.sizeOf(context).width <= AppConstants.smallMobileBreakpoint;
 
-  static bool isTablet(BuildContext context) =>
-      getDeviceType(context) == DeviceScreenType.tablet;
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < AppConstants.tabletBreakpoint;
+
+  static bool isTablet(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return width >= AppConstants.tabletBreakpoint && width < AppConstants.laptopBreakpoint;
+  }
+
+  static bool isLaptop(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return width >= AppConstants.laptopBreakpoint && width < AppConstants.desktopBreakpoint;
+  }
 
   static bool isDesktop(BuildContext context) =>
-      getDeviceType(context) == DeviceScreenType.desktop;
+      MediaQuery.sizeOf(context).width >= AppConstants.laptopBreakpoint;
+
+  static bool isLargeDesktop(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= AppConstants.largeDesktopBreakpoint;
+
+  static double contentWidth(BuildContext context) => MediaQuery.sizeOf(context).width;
 
   static T valueByDevice<T>({
     required BuildContext context,

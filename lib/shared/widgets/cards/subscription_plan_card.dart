@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_icons.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../app/theme/app_shadows.dart';
@@ -25,6 +26,8 @@ class SubscriptionPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNarrow = MediaQuery.sizeOf(context).width < 1200;
+
     return AppCard(
       borderColor: isSelected
           ? AppColors.primary
@@ -34,20 +37,23 @@ class SubscriptionPlanCard extends StatelessWidget {
           ? AppColors.primaryContainer.withValues(alpha: 0.25)
           : AppColors.surface,
       customShadow: isSelected ? AppShadows.primaryGlow : AppShadows.soft,
-      padding: AppSpacing.paddingLg,
+      padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                plan.name,
-                style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  plan.name,
+                  style: AppTypography.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              if (plan.isPopular)
+              if (plan.isPopular) ...[
+                const SizedBox(width: AppSpacing.xs),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.sm,
@@ -74,31 +80,36 @@ class SubscriptionPlanCard extends StatelessWidget {
                     ),
                   ),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '${plan.currency}${plan.monthlyPrice.toStringAsFixed(0)}',
-                style: AppTypography.displayMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 32,
-                  letterSpacing: -0.5,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  '${plan.currency}${plan.monthlyPrice.toStringAsFixed(0)}',
+                  style: AppTypography.displayMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 32,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '/${plan.billingPeriod}',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  '/${plan.billingPeriod}',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           const Divider(height: 1, color: AppColors.border),
@@ -208,16 +219,19 @@ class SubscriptionPlanCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
-                    Icons.check_circle_rounded,
+                    AppIcons.checkCircle,
                     color: AppColors.success,
                     size: 16,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    'Current Active Plan',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      'Current Active Plan',
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],

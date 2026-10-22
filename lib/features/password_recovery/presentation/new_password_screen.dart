@@ -25,11 +25,35 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasDigit = false;
+  bool _hasSpecialChar = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_updatePasswordStrength);
+  }
+
   @override
   void dispose() {
+    _passwordController.removeListener(_updatePasswordStrength);
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _updatePasswordStrength() {
+    final text = _passwordController.text;
+    setState(() {
+      _hasMinLength = text.length >= 8;
+      _hasUppercase = text.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = text.contains(RegExp(r'[a-z]'));
+      _hasDigit = text.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    });
   }
 
   void _onSetNewPassword() {
@@ -51,7 +75,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       builder: (context, state) {
         return AuthLayout(
           title: 'Create New Password',
-          subtitle: 'Ensure your new password meets clinical SaaS security requirements.',
+          subtitle: 'Ensure your new password meets clinical SaaS security compliance rules.',
+          footer: _buildFooter(context),
           child: Form(
             key: _formKey,
             child: Column(
@@ -62,33 +87,44 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                     title: 'Password Update Failed',
                     message: state.errorMessage,
                     type: StatusType.error,
+                    action: state.errorMessage!.toLowerCase().contains('expired') ||
+                            state.errorMessage!.toLowerCase().contains('session')
+                        ? TextButton(
+                            onPressed: () {
+                              context.read<PasswordRecoveryBloc>().add(ResetFlowReset());
+                              Navigator.of(context).pushReplacementNamed(RouteNames.forgotPassword);
+                            },
+                            child: const Text('Restart Password Reset'),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
                 AppPasswordField(
                   controller: _passwordController,
-                  label: 'New Password',
+                  label: 'New Password *',
                   hint: 'Min 8 chars, 1 uppercase, 1 number, 1 symbol',
                   enabled: !state.isLoading,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppPasswordField(
                   controller: _confirmPasswordController,
-                  label: 'Confirm New Password',
+                  label: 'Confirm New Password *',
                   hint: 'Re-enter your new password',
                   enabled: !state.isLoading,
-                  customValidator: (val) => AppValidators.confirmPassword(val, _passwordController.text),
+                  customValidator: (val) =>
+                      AppValidators.confirmPassword(val, _passwordController.text),
                 ),
                 const SizedBox(height: AppSpacing.md),
 
-                // Password requirements checklist
+                // Live password requirements checklist
                 _buildRequirementsList(),
                 const SizedBox(height: AppSpacing.lg),
 
                 PrimaryButton(
                   text: 'Update Password & Continue',
                   isLoading: state.isLoading,
-                  icon: Icons.check_rounded,
+                  icon: Icons.check_circle_outline_rounded,
                   onPressed: _onSetNewPassword,
                 ),
               ],
@@ -105,6 +141,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
         borderRadius: AppSpacing.borderRadiusSm,
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,25 +154,54 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
-          _buildCheckItem('At least 8 characters long'),
-          _buildCheckItem('At least 1 uppercase and 1 lowercase letter'),
-          _buildCheckItem('At least 1 numerical digit and 1 special symbol'),
+          _buildCheckItem('At least 8 characters long', _hasMinLength),
+          _buildCheckItem('At least 1 uppercase letter', _hasUppercase),
+          _buildCheckItem('At least 1 lowercase letter', _hasLowercase),
+          _buildCheckItem('At least 1 numerical digit', _hasDigit),
+          _buildCheckItem('At least 1 special character (!@#\$%^&*)', _hasSpecialChar),
         ],
       ),
     );
   }
 
-  Widget _buildCheckItem(String text) {
+  Widget _buildCheckItem(String text, bool satisfied) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_outline_rounded, size: 14, color: AppColors.primary),
+          Icon(
+            satisfied ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 14,
+            color: satisfied ? AppColors.success : AppColors.textTertiary,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
-            child: Text(text, style: AppTypography.bodySmall.copyWith(fontSize: 11)),
+            child: Text(
+              text,
+              style: AppTypography.bodySmall.copyWith(
+                fontSize: 11,
+                color: satisfied ? AppColors.textPrimary : AppColors.textSecondary,
+                fontWeight: satisfied ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    return Center(
+      child: TextButton.icon(
+        onPressed: () {
+          context.read<PasswordRecoveryBloc>().add(ResetFlowReset());
+          Navigator.of(context).pushReplacementNamed(RouteNames.login);
+        },
+        icon: const Icon(Icons.arrow_back_rounded, size: 16),
+        label: Text(
+          'Cancel & Return to Login',
+          style: AppTypography.labelMedium.copyWith(color: AppColors.primary),
+        ),
       ),
     );
   }

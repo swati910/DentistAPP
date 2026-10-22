@@ -48,6 +48,16 @@ class UnauthorizedException extends AppException {
       : super(code: 'UNAUTHORIZED');
 }
 
+class RateLimitException extends AppException {
+  const RateLimitException([super.message = 'Too many requests. Please wait a moment before trying again.'])
+      : super(code: 'RATE_LIMIT_EXCEEDED');
+}
+
+class TokenAlreadyUsedException extends AppException {
+  const TokenAlreadyUsedException([super.message = 'This verification code or link has already been used.'])
+      : super(code: 'TOKEN_ALREADY_USED');
+}
+
 class ValidationException extends AppException {
   const ValidationException(super.message) : super(code: 'VALIDATION_ERROR');
 }

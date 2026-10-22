@@ -84,82 +84,112 @@ class _InviteUserScreenState extends State<InviteUserScreen> {
         ),
       ),
       body: Center(
-        child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540),
-            child: BlocBuilder<UserManagementBloc, UserManagementState>(
-              builder: (context, state) {
-                if (state.isInviteSuccess) {
-                  return AppCard(
-                    padding: AppSpacing.paddingXl,
-                    child: AppSuccessState(
-                      title: 'Invitation Dispatched!',
-                      message:
-                          'An onboarding invitation link with credentials has been delivered to ${_emailController.text.isNotEmpty ? _emailController.text : 'the user'}.',
-                      actionText: 'Invite Another Colleague',
-                      onAction: _resetForm,
-                    ),
-                  );
-                }
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 480;
+            final cardPadding = constraints.maxWidth < 400
+                ? const EdgeInsets.all(AppSpacing.md)
+                : (constraints.maxWidth < 600
+                    ? const EdgeInsets.all(AppSpacing.lg)
+                    : AppSpacing.paddingXl);
 
-                return AppCard(
-                  padding: AppSpacing.paddingXl,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Send Team Invitation', style: AppTypography.titleLarge),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          'Invite doctors, dental hygienists, or front desk staff to your clinical tenant.',
-                          style: AppTypography.bodyMedium,
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: constraints.maxWidth < 360 ? AppSpacing.sm : AppSpacing.md,
+                vertical: AppSpacing.lg,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 540),
+                child: BlocBuilder<UserManagementBloc, UserManagementState>(
+                  builder: (context, state) {
+                    if (state.isInviteSuccess) {
+                      return AppCard(
+                        padding: cardPadding,
+                        child: AppSuccessState(
+                          title: 'Invitation Dispatched!',
+                          message:
+                              'An onboarding invitation link with credentials has been delivered to ${_emailController.text.isNotEmpty ? _emailController.text : 'the user'}.',
+                          actionText: 'Invite Another Colleague',
+                          onAction: _resetForm,
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                      );
+                    }
 
-                        if (!authUser.permissions.canInviteUsers) ...[
-                          const StatusCard(
-                            title: 'Permission Denied',
-                            message: 'Only Clinic Administrators can invite new staff members.',
-                            type: StatusType.error,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                        ],
-
-                        if (state.errorMessage != null) ...[
-                          StatusCard(
-                            title: 'Invitation Failed',
-                            message: state.errorMessage,
-                            type: StatusType.error,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                        ],
-
-                        Row(
+                    return AppCard(
+                      padding: cardPadding,
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: AppTextField(
+                            Text('Send Team Invitation', style: AppTypography.titleLarge),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Invite doctors, dental hygienists, or front desk staff to your clinical tenant.',
+                              style: AppTypography.bodyMedium,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+
+                            if (!authUser.permissions.canInviteUsers) ...[
+                              const StatusCard(
+                                title: 'Permission Denied',
+                                message: 'Only Clinic Administrators can invite new staff members.',
+                                type: StatusType.error,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                            ],
+
+                            if (state.errorMessage != null) ...[
+                              StatusCard(
+                                title: 'Invitation Failed',
+                                message: state.errorMessage,
+                                type: StatusType.error,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                            ],
+
+                            if (!isNarrow)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: AppTextField(
+                                      controller: _firstNameController,
+                                      label: 'First Name *',
+                                      hint: 'e.g., Marcus',
+                                      enabled: authUser.permissions.canInviteUsers && !state.isLoading,
+                                      validator: (v) => AppValidators.requiredField(v, 'First Name'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: AppTextField(
+                                      controller: _lastNameController,
+                                      label: 'Last Name *',
+                                      hint: 'e.g., Vance',
+                                      enabled: authUser.permissions.canInviteUsers && !state.isLoading,
+                                      validator: (v) => AppValidators.requiredField(v, 'Last Name'),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else ...[
+                              AppTextField(
                                 controller: _firstNameController,
                                 label: 'First Name *',
                                 hint: 'e.g., Marcus',
                                 enabled: authUser.permissions.canInviteUsers && !state.isLoading,
                                 validator: (v) => AppValidators.requiredField(v, 'First Name'),
                               ),
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: AppTextField(
+                              const SizedBox(height: AppSpacing.md),
+                              AppTextField(
                                 controller: _lastNameController,
                                 label: 'Last Name *',
                                 hint: 'e.g., Vance',
                                 enabled: authUser.permissions.canInviteUsers && !state.isLoading,
                                 validator: (v) => AppValidators.requiredField(v, 'Last Name'),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.md),
+                            ],
+                            const SizedBox(height: AppSpacing.md),
 
                         AppEmailField(
                           controller: _emailController,
@@ -206,8 +236,10 @@ class _InviteUserScreenState extends State<InviteUserScreen> {
               },
             ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      },
+    ),
+  ),
+);
+}
 }

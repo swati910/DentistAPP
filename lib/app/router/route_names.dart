@@ -23,6 +23,7 @@ class RouteNames {
   static const String subscriptionStatus = '/subscription/status';
 
   // Settings & Management
+  static const String profile = '/profile';
   static const String clinicSettings = '/clinic-settings';
   static const String users = '/users';
   static const String inviteUser = '/users/invite';

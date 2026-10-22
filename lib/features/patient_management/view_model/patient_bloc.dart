@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/state/view_state.dart';
+import '../../../shared/models/medical_history_model.dart';
 import '../../../shared/models/patient_model.dart';
 import '../data/patient_repository.dart';
 import 'patient_event.dart';
@@ -23,6 +24,17 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     on<ArchivePatientRequested>(_onArchivePatientRequested);
     on<AddClinicalNoteSubmitted>(_onAddClinicalNoteSubmitted);
     on<ScheduleAppointmentSubmitted>(_onScheduleAppointmentSubmitted);
+    on<AddOrUpdateMedicalAllergySubmitted>(_onAddOrUpdateMedicalAllergySubmitted);
+    on<DeleteMedicalAllergySubmitted>(_onDeleteMedicalAllergySubmitted);
+    on<UpdatePatientAllergyStatusSubmitted>(_onUpdatePatientAllergyStatusSubmitted);
+    on<AddOrUpdateMedicalConditionSubmitted>(_onAddOrUpdateMedicalConditionSubmitted);
+    on<DeleteMedicalConditionSubmitted>(_onDeleteMedicalConditionSubmitted);
+    on<AddOrUpdateMedicationSubmitted>(_onAddOrUpdateMedicationSubmitted);
+    on<DeleteMedicationSubmitted>(_onDeleteMedicationSubmitted);
+    on<AddOrUpdatePastMedicalHistorySubmitted>(_onAddOrUpdatePastMedicalHistorySubmitted);
+    on<DeletePastMedicalHistorySubmitted>(_onDeletePastMedicalHistorySubmitted);
+    on<UpdatePastDentalHistorySubmitted>(_onUpdatePastDentalHistorySubmitted);
+    on<UpdateAdditionalMedicalInfoSubmitted>(_onUpdateAdditionalMedicalInfoSubmitted);
   }
 
   Future<void> _onLoadPatientsRequested(
@@ -379,6 +391,284 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
       emit(state.copyWith(status: Status.error, errorMessage: e.message));
     } catch (e) {
       emit(state.copyWith(status: Status.error, errorMessage: 'Failed to schedule appointment.'));
+    }
+  }
+
+  void _emitUpdatedPatient(
+    Emitter<PatientState> emit, {
+    required PatientModel updatedPatient,
+    required String successMessage,
+  }) {
+    final updatedList = state.patients.map((p) => p.id == updatedPatient.id ? updatedPatient : p).toList();
+    final filtered = _applyFiltersAndSort(
+      updatedList,
+      query: state.searchQuery,
+      status: state.statusFilter,
+      risk: state.riskFilter,
+      sortBy: state.sortBy,
+    );
+
+    emit(state.copyWith(
+      status: Status.success,
+      patients: updatedList,
+      filteredPatients: filtered,
+      selectedPatient: updatedPatient,
+      isActionSuccess: true,
+      successMessage: successMessage,
+    ));
+  }
+
+  Future<void> _onAddOrUpdateMedicalAllergySubmitted(
+    AddOrUpdateMedicalAllergySubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.addOrUpdateMedicalAllergy(
+        patientId: event.patientId,
+        allergy: event.allergy,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Allergy record for "${event.allergy.allergen}" saved successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to save allergy record.'));
+    }
+  }
+
+  Future<void> _onDeleteMedicalAllergySubmitted(
+    DeleteMedicalAllergySubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.deleteMedicalAllergy(
+        patientId: event.patientId,
+        allergyId: event.allergyId,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Allergy record removed successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to delete allergy record.'));
+    }
+  }
+
+  Future<void> _onUpdatePatientAllergyStatusSubmitted(
+    UpdatePatientAllergyStatusSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.updatePatientAllergyStatus(
+        patientId: event.patientId,
+        status: event.status,
+        currentUser: event.currentUser,
+        notes: event.notes,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Patient allergy status updated to "${event.status.label}".',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to update allergy status.'));
+    }
+  }
+
+  Future<void> _onAddOrUpdateMedicalConditionSubmitted(
+    AddOrUpdateMedicalConditionSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.addOrUpdateMedicalCondition(
+        patientId: event.patientId,
+        condition: event.condition,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Medical condition "${event.condition.name}" saved successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to save medical condition.'));
+    }
+  }
+
+  Future<void> _onDeleteMedicalConditionSubmitted(
+    DeleteMedicalConditionSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.deleteMedicalCondition(
+        patientId: event.patientId,
+        conditionId: event.conditionId,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Medical condition removed successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to delete medical condition.'));
+    }
+  }
+
+  Future<void> _onAddOrUpdateMedicationSubmitted(
+    AddOrUpdateMedicationSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.addOrUpdateMedication(
+        patientId: event.patientId,
+        medication: event.medication,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Medication "${event.medication.name}" saved successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to save medication.'));
+    }
+  }
+
+  Future<void> _onDeleteMedicationSubmitted(
+    DeleteMedicationSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.deleteMedication(
+        patientId: event.patientId,
+        medicationId: event.medicationId,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Medication record removed successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to delete medication.'));
+    }
+  }
+
+  Future<void> _onAddOrUpdatePastMedicalHistorySubmitted(
+    AddOrUpdatePastMedicalHistorySubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.addOrUpdatePastMedicalHistoryItem(
+        patientId: event.patientId,
+        item: event.item,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Past medical history item "${event.item.event}" saved successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to save past medical history.'));
+    }
+  }
+
+  Future<void> _onDeletePastMedicalHistorySubmitted(
+    DeletePastMedicalHistorySubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.deletePastMedicalHistoryItem(
+        patientId: event.patientId,
+        itemId: event.itemId,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Past medical history item removed.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to delete past medical history item.'));
+    }
+  }
+
+  Future<void> _onUpdatePastDentalHistorySubmitted(
+    UpdatePastDentalHistorySubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.updatePastDentalHistory(
+        patientId: event.patientId,
+        dentalHistory: event.dentalHistory,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Dental history and oral hygiene profile updated successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to update dental history.'));
+    }
+  }
+
+  Future<void> _onUpdateAdditionalMedicalInfoSubmitted(
+    UpdateAdditionalMedicalInfoSubmitted event,
+    Emitter<PatientState> emit,
+  ) async {
+    emit(state.copyWith(status: Status.loading, errorMessage: null));
+    try {
+      final updatedPatient = await _repository.updateAdditionalMedicalInfo(
+        patientId: event.patientId,
+        additionalInfo: event.additionalInfo,
+        currentUser: event.currentUser,
+      );
+      _emitUpdatedPatient(
+        emit,
+        updatedPatient: updatedPatient,
+        successMessage: 'Additional medical, family, and lifestyle info updated successfully.',
+      );
+    } on AppException catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: e.message));
+    } catch (e) {
+      emit(state.copyWith(status: Status.error, errorMessage: 'Failed to update clinical information.'));
     }
   }
 

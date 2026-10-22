@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_icons.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/utils/responsive_utils.dart';
@@ -37,7 +38,7 @@ class ResponsiveScaffold extends StatelessWidget {
     if (leading != null) return leading;
     if (!showDrawer) {
       return IconButton(
-        icon: const Icon(Icons.arrow_back_rounded),
+        icon: const Icon(AppIcons.back),
         tooltip: 'Back',
         onPressed: onBack ??
             () {
@@ -172,15 +173,16 @@ class ResponsiveScaffold extends StatelessWidget {
                     ],
                   ),
                   child: const Icon(
-                    Icons.medical_services_rounded,
+                    AppIcons.medical,
                     color: Colors.white,
                     size: 22,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Row(
                       children: [
                         Text(
@@ -220,6 +222,7 @@ class ResponsiveScaffold extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
               ],
             ),
           ),
@@ -258,7 +261,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 ),
                 const Spacer(),
                 const Icon(
-                  Icons.shield_outlined,
+                  AppIcons.shield,
                   size: 14,
                   color: AppColors.textTertiary,
                 ),
@@ -288,7 +291,7 @@ class ResponsiveScaffold extends StatelessWidget {
                     borderRadius: AppSpacing.borderRadiusSm,
                   ),
                   child: const Icon(
-                    Icons.medical_services_rounded,
+                    AppIcons.medical,
                     color: Colors.white,
                     size: 32,
                   ),
@@ -337,37 +340,32 @@ class ResponsiveScaffold extends StatelessWidget {
       {
         'route': RouteNames.patients,
         'label': 'Patients Directory',
-        'icon': Icons.people_alt_rounded
+        'icon': AppIcons.patients,
       },
       {
         'route': RouteNames.onboardingStatus,
         'label': 'Onboarding Status',
-        'icon': Icons.insights_rounded
+        'icon': AppIcons.onboardingStatus,
       },
       {
         'route': RouteNames.subscriptionPlans,
-        'label': 'Subscription Plans',
-        'icon': Icons.card_membership_rounded
+        'label': 'Subscription & Plans',
+        'icon': AppIcons.subscription,
       },
       {
-        'route': RouteNames.subscriptionStatus,
-        'label': 'Current Subscription',
-        'icon': Icons.subscriptions_outlined
-      },
-      {
-        'route': RouteNames.clinicSettings,
-        'label': 'Clinic Settings',
-        'icon': Icons.settings_outlined
+        'route': RouteNames.profile,
+        'label': 'Profile & Settings',
+        'icon': AppIcons.profile,
       },
       {
         'route': RouteNames.users,
         'label': 'Team & Staff',
-        'icon': Icons.badge_outlined
+        'icon': AppIcons.team,
       },
       {
         'route': RouteNames.login,
         'label': 'Logout',
-        'icon': Icons.logout_rounded
+        'icon': AppIcons.logout,
       },
     ];
 
@@ -375,7 +373,13 @@ class ResponsiveScaffold extends StatelessWidget {
       final route = item['route'] as String;
       final label = item['label'] as String;
       final icon = item['icon'] as IconData;
-      final isSelected = currentRoute == route;
+      final isSelected = currentRoute == route ||
+          (route == RouteNames.subscriptionPlans &&
+              (currentRoute == RouteNames.subscriptionStatus ||
+                  currentRoute == RouteNames.subscriptionPlans)) ||
+          (route == RouteNames.profile &&
+              (currentRoute == RouteNames.profile ||
+                  currentRoute == RouteNames.clinicSettings));
       final isLogout = route == RouteNames.login;
 
       return Container(
@@ -387,34 +391,37 @@ class ResponsiveScaffold extends StatelessWidget {
               ? Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 1)
               : null,
         ),
-        child: ListTile(
-          leading: Icon(
-            icon,
-            color: isSelected
-                ? AppColors.primary
-                : (isLogout ? AppColors.error : AppColors.textSecondary),
-            size: 20,
-          ),
-          title: Text(
-            label,
-            style: AppTypography.labelLarge.copyWith(
+        child: Material(
+          color: Colors.transparent,
+          child: ListTile(
+            leading: Icon(
+              icon,
               color: isSelected
                   ? AppColors.primary
-                  : (isLogout ? AppColors.error : AppColors.textPrimary),
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              fontSize: 13,
+                  : (isLogout ? AppColors.error : AppColors.textSecondary),
+              size: 20,
             ),
+            title: Text(
+              label,
+              style: AppTypography.labelLarge.copyWith(
+                color: isSelected
+                    ? AppColors.primary
+                    : (isLogout ? AppColors.error : AppColors.textPrimary),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+            dense: true,
+            shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusSm),
+            onTap: () {
+              if (isDrawer) Navigator.of(context).pop();
+              if (route == RouteNames.login) {
+                Navigator.of(context).pushNamedAndRemoveUntil(route, (r) => false);
+              } else if (!isSelected) {
+                Navigator.of(context).pushReplacementNamed(route);
+              }
+            },
           ),
-          dense: true,
-          shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusSm),
-          onTap: () {
-            if (isDrawer) Navigator.of(context).pop();
-            if (route == RouteNames.login) {
-              Navigator.of(context).pushNamedAndRemoveUntil(route, (r) => false);
-            } else if (!isSelected) {
-              Navigator.of(context).pushReplacementNamed(route);
-            }
-          },
         ),
       );
     }).toList();

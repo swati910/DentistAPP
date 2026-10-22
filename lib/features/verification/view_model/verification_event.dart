@@ -26,6 +26,15 @@ class VerifyOtpSubmitted extends VerificationEvent {
   List<Object?> get props => [email, otp];
 }
 
+class VerifyEmailTokenSubmitted extends VerificationEvent {
+  final String token;
+
+  const VerifyEmailTokenSubmitted(this.token);
+
+  @override
+  List<Object?> get props => [token];
+}
+
 class ResendVerificationEmailRequested extends VerificationEvent {
   final String email;
 
@@ -44,6 +53,19 @@ class ResendVerificationOtpRequested extends VerificationEvent {
   List<Object?> get props => [email];
 }
 
+class UpdateVerificationEmailRequested extends VerificationEvent {
+  final String oldEmail;
+  final String newEmail;
+
+  const UpdateVerificationEmailRequested({
+    required this.oldEmail,
+    required this.newEmail,
+  });
+
+  @override
+  List<Object?> get props => [oldEmail, newEmail];
+}
+
 class VerificationCooldownTicked extends VerificationEvent {
   final int secondsRemaining;
 
@@ -52,3 +74,5 @@ class VerificationCooldownTicked extends VerificationEvent {
   @override
   List<Object?> get props => [secondsRemaining];
 }
+
+class ResetVerificationFlow extends VerificationEvent {}

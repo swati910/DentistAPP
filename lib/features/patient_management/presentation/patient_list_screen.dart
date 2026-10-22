@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_icons.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/state/view_state.dart';
@@ -189,21 +190,24 @@ class _PatientListViewState extends State<_PatientListView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Patient Clinical Directory',
-              style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Comprehensive electronic health records, AI dental vision scans, and appointments.',
-              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Patient Clinical Directory',
+                style: AppTypography.headlineMedium.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Comprehensive electronic health records, AI dental vision scans, and appointments.',
+                style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
         ),
-        if (isDesktop)
+        if (isDesktop) ...[
+          const SizedBox(width: AppSpacing.md),
           ElevatedButton.icon(
             onPressed: () async {
               final bloc = context.read<PatientBloc>();
@@ -221,6 +225,7 @@ class _PatientListViewState extends State<_PatientListView> {
               shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusSm),
             ),
           ),
+        ],
       ],
     );
   }
@@ -265,7 +270,12 @@ class _PatientListViewState extends State<_PatientListView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 2 : 2);
+        final crossAxisCount = constraints.maxWidth > 900
+            ? 4
+            : (constraints.maxWidth > 520 ? 2 : 1);
+        final childAspectRatio = constraints.maxWidth > 900
+            ? 2.4
+            : (constraints.maxWidth > 520 ? 2.4 : 3.4);
 
         return GridView.builder(
           shrinkWrap: true,
@@ -274,7 +284,7 @@ class _PatientListViewState extends State<_PatientListView> {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: AppSpacing.md,
             mainAxisSpacing: AppSpacing.md,
-            childAspectRatio: constraints.maxWidth > 900 ? 2.4 : 2.0,
+            childAspectRatio: childAspectRatio,
           ),
           itemCount: metrics.length,
           itemBuilder: (context, index) {
@@ -332,10 +342,10 @@ class _PatientListViewState extends State<_PatientListView> {
                 child: AppTextField(
                   controller: _searchController,
                   hint: 'Search by patient name, ID (e.g. PT-2026-0042), phone, or attending dentist...',
-                  prefixIcon: const Icon(Icons.search, color: AppColors.textTertiary),
+                  prefixIcon: const Icon(AppIcons.search, color: AppColors.textTertiary),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
+                          icon: const Icon(AppIcons.close, size: 18),
                           onPressed: () {
                             _searchController.clear();
                             context.read<PatientBloc>().add(const SearchQueryChanged(''));
@@ -485,179 +495,191 @@ class _PatientListViewState extends State<_PatientListView> {
 
     return AppCard(
       padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 44),
-                Expanded(flex: 3, child: Text('PATIENT INFO', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('DEMOGRAPHICS', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('CLINICAL RISK', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('INSURANCE', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('ASSIGNED DENTIST', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('LAST VISIT', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
-                const SizedBox(width: 130, child: Text('ACTIONS', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
-              ],
-            ),
-          ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: patients.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final patient = patients[index];
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tableWidth = constraints.maxWidth > 1050 ? constraints.maxWidth : 1050.0;
 
-              return InkWell(
-                onTap: () {
-                  Navigator.of(context).pushNamed(
-                    RouteNames.patientDetails,
-                    arguments: patient,
-                  );
-                },
-                hoverColor: AppColors.surfaceVariant.withAlpha(50),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: AppColors.primaryContainer,
-                        child: Text(
-                          patient.initials,
-                          style: AppTypography.labelMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              patient.fullName,
-                              style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: tableWidth,
+              child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 44),
+                    Expanded(flex: 3, child: Text('PATIENT INFO', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('DEMOGRAPHICS', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('CLINICAL RISK', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('INSURANCE', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('ASSIGNED DENTIST', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('LAST VISIT', style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold))),
+                    const SizedBox(width: 130, child: Text('ACTIONS', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: patients.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final patient = patients[index];
+
+                  return InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        RouteNames.patientDetails,
+                        arguments: patient,
+                      );
+                    },
+                    hoverColor: AppColors.surfaceVariant.withAlpha(50),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: AppColors.primaryContainer,
+                            child: Text(
+                              patient.initials,
+                              style: AppTypography.labelMedium.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            Row(
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  patient.patientNumber,
-                                  style: AppTypography.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                                  patient.fullName,
+                                  style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
                                 ),
-                                if (patient.allergies.isNotEmpty) ...[
-                                  const SizedBox(width: 6),
-                                  const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 14),
-                                ],
+                                Row(
+                                  children: [
+                                    Text(
+                                      patient.patientNumber,
+                                      style: AppTypography.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                                    ),
+                                    if (patient.allergies.isNotEmpty) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 14),
+                                    ],
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '${patient.age} yrs • ${patient.gender.displayName}\n${patient.bloodGroup}',
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: StatusBadge(
-                            label: patient.riskLevel.displayName.toUpperCase(),
-                            variant: patient.riskLevel == PatientRiskLevel.high
-                                ? StatusBadgeVariant.error
-                                : (patient.riskLevel == PatientRiskLevel.medium
-                                    ? StatusBadgeVariant.warning
-                                    : StatusBadgeVariant.success),
-                            fontSize: 10,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: patient.isInsuranceActive
-                            ? Row(
-                                children: [
-                                  const Icon(Icons.verified_user_rounded, color: AppColors.success, size: 16),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      patient.insuranceProvider ?? 'Insured',
-                                      style: AppTypography.labelSmall.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Text('Self-Pay / None', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          patient.assignedDentistName ?? 'Unassigned',
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          patient.lastVisitDate != null ? dateFormat.format(patient.lastVisitDate!) : 'No visits',
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 130,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.note_add_outlined, size: 18),
-                              color: AppColors.primary,
-                              tooltip: 'Quick Clinical Note',
-                              onPressed: () => _openAddNoteDialog(context, patient),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              '${patient.age} yrs • ${patient.gender.displayName}\n${patient.bloodGroup}',
+                              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
                             ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pushNamed(
-                                  RouteNames.patientDetails,
-                                  arguments: patient,
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryContainer,
-                                foregroundColor: AppColors.primary,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusSm),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: StatusBadge(
+                                label: patient.riskLevel.displayName.toUpperCase(),
+                                variant: patient.riskLevel == PatientRiskLevel.high
+                                    ? StatusBadgeVariant.error
+                                    : (patient.riskLevel == PatientRiskLevel.medium
+                                        ? StatusBadgeVariant.warning
+                                        : StatusBadgeVariant.success),
+                                fontSize: 10,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               ),
-                              child: const Text('View', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                             ),
-                          ],
-                        ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: patient.isInsuranceActive
+                                ? Row(
+                                    children: [
+                                      const Icon(Icons.verified_user_rounded, color: AppColors.success, size: 16),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          patient.insuranceProvider ?? 'Insured',
+                                          style: AppTypography.labelSmall.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text('Self-Pay / None', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              patient.assignedDentistName ?? 'Unassigned',
+                              style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              patient.lastVisitDate != null ? dateFormat.format(patient.lastVisitDate!) : 'No visits',
+                              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 130,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.note_add_outlined, size: 18),
+                                  color: AppColors.primary,
+                                  tooltip: 'Quick Clinical Note',
+                                  onPressed: () => _openAddNoteDialog(context, patient),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pushNamed(
+                                      RouteNames.patientDetails,
+                                      arguments: patient,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryContainer,
+                                    foregroundColor: AppColors.primary,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusSm),
+                                  ),
+                                  child: const Text('View', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
+    },
+  ),
+);
+}
 
   Widget _buildMobileCardList(BuildContext context, List<PatientModel> patients) {
     return ListView.separated(

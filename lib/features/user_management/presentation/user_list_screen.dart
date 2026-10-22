@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_icons.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/utils/responsive_utils.dart';
@@ -49,37 +50,39 @@ class _UserListScreenState extends State<UserListScreen> {
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text('Change Role: ${user.fullName}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('Dentist / Clinician'),
-                subtitle: const Text('Can access clinical records and AI diagnostic tools'),
-                leading: Icon(
-                  selectedRole == UserRole.dentist ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                  color: selectedRole == UserRole.dentist ? AppColors.primary : AppColors.textTertiary,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('Dentist / Clinician'),
+                  subtitle: const Text('Can access clinical records and AI diagnostic tools'),
+                  leading: Icon(
+                    selectedRole == UserRole.dentist ? AppIcons.radioButtonChecked : AppIcons.radioButtonUnchecked,
+                    color: selectedRole == UserRole.dentist ? AppColors.primary : AppColors.textTertiary,
+                  ),
+                  onTap: () => setDialogState(() => selectedRole = UserRole.dentist),
                 ),
-                onTap: () => setDialogState(() => selectedRole = UserRole.dentist),
-              ),
-              ListTile(
-                title: const Text('Clinic Staff'),
-                subtitle: const Text('Can manage appointments, front desk, and patient intake'),
-                leading: Icon(
-                  selectedRole == UserRole.staff ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                  color: selectedRole == UserRole.staff ? AppColors.primary : AppColors.textTertiary,
+                ListTile(
+                  title: const Text('Clinic Staff'),
+                  subtitle: const Text('Can manage appointments, front desk, and patient intake'),
+                  leading: Icon(
+                    selectedRole == UserRole.staff ? AppIcons.radioButtonChecked : AppIcons.radioButtonUnchecked,
+                    color: selectedRole == UserRole.staff ? AppColors.primary : AppColors.textTertiary,
+                  ),
+                  onTap: () => setDialogState(() => selectedRole = UserRole.staff),
                 ),
-                onTap: () => setDialogState(() => selectedRole = UserRole.staff),
-              ),
-              ListTile(
-                title: const Text('Clinic Administrator'),
-                subtitle: const Text('Full practice administrative and billing privileges'),
-                leading: Icon(
-                  selectedRole == UserRole.administrator ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                  color: selectedRole == UserRole.administrator ? AppColors.primary : AppColors.textTertiary,
+                ListTile(
+                  title: const Text('Clinic Administrator'),
+                  subtitle: const Text('Full practice administrative and billing privileges'),
+                  leading: Icon(
+                    selectedRole == UserRole.administrator ? AppIcons.radioButtonChecked : AppIcons.radioButtonUnchecked,
+                    color: selectedRole == UserRole.administrator ? AppColors.primary : AppColors.textTertiary,
+                  ),
+                  onTap: () => setDialogState(() => selectedRole = UserRole.administrator),
                 ),
-                onTap: () => setDialogState(() => selectedRole = UserRole.administrator),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -244,16 +247,24 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget _buildDesktopTable(List<UserModel> users, UserModel currentUser) {
     return AppCard(
       padding: EdgeInsets.zero,
-      child: Table(
-        columnWidths: const {
-          0: FlexColumnWidth(2.5),
-          1: FlexColumnWidth(2.0),
-          2: FlexColumnWidth(1.2),
-          3: FlexColumnWidth(1.2),
-          4: FlexColumnWidth(1.2),
-        },
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        children: [
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tableWidth = constraints.maxWidth > 880 ? constraints.maxWidth : 880.0;
+
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: tableWidth,
+              child: Table(
+                columnWidths: const {
+                  0: FlexColumnWidth(2.5),
+                  1: FlexColumnWidth(2.2),
+                  2: FlexColumnWidth(1.4),
+                  3: FlexColumnWidth(1.4),
+                  4: FlexColumnWidth(1.3),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                children: [
           TableRow(
             decoration: const BoxDecoration(
               color: AppColors.surfaceVariant,
@@ -355,8 +366,12 @@ class _UserListScreenState extends State<UserListScreen> {
           }),
         ],
       ),
-    );
-  }
+    ),
+  );
+    },
+  ),
+);
+}
 
   Widget _buildTableHeader(String text) {
     return Padding(
@@ -443,7 +458,13 @@ class _UserListScreenState extends State<UserListScreen> {
       children: [
         Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
         const SizedBox(width: AppSpacing.xs),
-        Text(status.displayName, style: AppTypography.bodySmall.copyWith(color: color, fontWeight: FontWeight.w600)),
+        Flexible(
+          child: Text(
+            status.displayName,
+            style: AppTypography.bodySmall.copyWith(color: color, fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
